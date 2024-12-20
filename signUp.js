@@ -11,23 +11,30 @@ document.addEventListener('DOMContentLoaded', function () {
   
     
     ws.onmessage = function (event) {
-        console.log('Message from server:', event.data);
+    console.log('서버로부터의 메시지:', event.data);
 
-        // 서버에서 받은 JSON 문자열을 객체로 변환
-        let messageObject = JSON.parse(event.data);
+    // 수신한 데이터가 Blob인지 확인
+    if (event.data instanceof Blob) {
+        // FileReader를 사용하여 Blob을 텍스트로 변환
+        const reader = new FileReader();
+        reader.onload = function() {
+            try {
+                const messageObject = JSON.parse(reader.result); // JSON 파싱
 
-        // 로컬 스토리지에 객체를 문자열로 저장하기 전에 객체로 처리
-        //let receivedMessages = JSON.parse(localStorage.getItem('receivedMessages')) || [];
-        //receivedMessages.push(messageObject);  // 객체를 배열에 추가
+                // 로컬 스토리지에 메시지 저장
+                localStorage.setItem('receivedMessage', JSON.stringify(messageObject));
 
-         //배열을 문자열로 변환하여 로컬 스토리지에 저장
-        //localStorage.setItem('receivedMessages', JSON.stringify(receivedMessages));
-        
-        // 로컬 스토리지에 마지막 메시지를 저장
-        localStorage.setItem('receivedMessage', JSON.stringify(messageObject));
-        // 화면 업데이트
-        updateReceivedMessages(); 
-    };
+                // 화면 업데이트
+                updateReceivedMessages();
+            } catch (error) {
+                console.error('JSON 파싱 오류:', error);
+            }
+        };
+        reader.readAsText(event.data); // Blob을 텍스트로 읽기
+    } else {
+        console.error('수신한 데이터가 Blob이 아닙니다:', event.data);
+    }
+};
 
     function updateReceivedMessages() {
         const receivedMessagesDiv = document.getElementById('receivedMessages');
