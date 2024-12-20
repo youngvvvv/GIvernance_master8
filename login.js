@@ -34,26 +34,38 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('loginStatus', 'false');
     };
 
-    ws.onmessage = function(event) {
-        console.log('Message from server:', event.data);
-        const data = JSON.parse(event.data);
-        
-        // localStorage에 loginStatus 업데이트
-        localStorage.setItem('loginStatus', data);
+    ws.onmessage = async function(event) {
+    console.log('Message from server:', event.data);
 
-        // Optional: 로그인 상태에 따라 추가 작업
-        if (data) {
-            console.log("Login successful!");
-  
-            // 조건이 참이면 index.html로 페이지를 리디렉트합니다.
-            window.location.href = '/index.html';
-    
-            // 필요한 경우 여기서 추가 작업 수행
-        } else {
-            console.log("Login failed. Face does not match.");
-            // 실패 시 추가 작업 수행
+    // Check if the data is a Blob
+    if (event.data instanceof Blob) {
+        // Convert Blob to text
+        const textData = await event.data.text(); // Convert Blob to string
+        try {
+            const data = JSON.parse(textData); // Parse JSON if possible
+
+            // localStorage에 loginStatus 업데이트
+            localStorage.setItem('loginStatus', data);
+
+            // Optional: 로그인 상태에 따라 추가 작업
+            if (data) {
+                console.log("Login successful!");
+
+                // 조건이 참이면 index.html로 페이지를 리디렉트합니다.
+                window.location.href = '/index.html';
+
+                // 필요한 경우 여기서 추가 작업 수행
+            } else {
+                console.log("Login failed. Face does not match.");
+                // 실패 시 추가 작업 수행
+            }
+        } catch (error) {
+            console.error('Error parsing JSON:', error, textData);
         }
-    };
+    } else {
+        console.error('Unexpected data type:', event.data);
+    }
+};
 
     function updateLoginStatus(isMatch) {
         console.log('Updating login status:', isMatch);
