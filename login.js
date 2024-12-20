@@ -34,39 +34,21 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('loginStatus', 'false');
     };
 
-    ws.onmessage = async function(event) {
-    console.log('Message from server:', event.data);
+    ws.onmessage = function (event) {
+    console.log('서버로부터의 메시지:', event.data);
 
-    // Check if the data is a Blob
+    // 수신한 데이터가 Blob인지 확인
     if (event.data instanceof Blob) {
-        // Convert Blob to text
-        const textData = await event.data.text(); // Convert Blob to string
-        try {
-            const data = JSON.parse(textData); // Parse JSON if possible
+        // FileReader를 사용하여 Blob을 텍스트로 변환
+        const reader = new FileReader();
+        reader.onload = function() {
+            try {
+                const messageObject = JSON.parse(reader.result); // JSON 파싱
 
-            // localStorage에 loginStatus 업데이트
-            localStorage.setItem('loginStatus', data);
+                // 로컬 스토리지에 메시지 저장
+                localStorage.setItem('receivedMessage', JSON.stringify(messageObject));
 
-            // Optional: 로그인 상태에 따라 추가 작업
-            if (data) {
-                console.log("Login successful!");
-
-                // 조건이 참이면 index.html로 페이지를 리디렉트합니다.
-                window.location.href = '/index.html';
-
-                // 필요한 경우 여기서 추가 작업 수행
-            } else {
-                console.log("Login failed. Face does not match.");
-                // 실패 시 추가 작업 수행
-            }
-        } catch (error) {
-            console.error('Error parsing JSON:', error, textData);
-        }
-    } else {
-        console.error('Unexpected data type:', event.data);
-    }
-};
-
+                //
     function updateLoginStatus(isMatch) {
         console.log('Updating login status:', isMatch);
         localStorage.setItem('loginStatus', JSON.stringify(isMatch));
