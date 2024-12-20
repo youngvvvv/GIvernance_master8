@@ -48,7 +48,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 로컬 스토리지에 메시지 저장
                 localStorage.setItem('receivedMessage', JSON.stringify(messageObject));
 
-                //
+                // 화면 업데이트
+                updateReceivedMessages();
+            } catch (error) {
+                console.error('JSON 파싱 오류:', error);
+            }
+        };
+        reader.readAsText(event.data); // Blob을 텍스트로 읽기
+    } else {
+        console.error('수신한 데이터가 Blob이 아닙니다:', event.data);
+    }
+};
     function updateLoginStatus(isMatch) {
         console.log('Updating login status:', isMatch);
         localStorage.setItem('loginStatus', JSON.stringify(isMatch));
